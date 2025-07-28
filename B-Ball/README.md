@@ -462,7 +462,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - React and TypeScript communities
 - Tailwind CSS for the utility-first CSS framework
 - NBA Stats API community for documentation and examples
-
----
-
-**Built with ❤️ for NBA analytics and coaching staff worldwide - Now with Real NBA Data!**
