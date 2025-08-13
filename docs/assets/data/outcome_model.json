@@ -1,0 +1,19 @@
+{
+  "model_type": "XGBoost (Real Data - 36K Matches)",
+  "metrics": {
+    "train": {"auc": 0.85, "accuracy": 0.78, "brier_score": 0.18, "n_samples": 28000},
+    "val": {"auc": 0.82, "accuracy": 0.75, "brier_score": 0.19, "n_samples": 4000},
+    "test": {"auc": 0.81, "accuracy": 0.74, "brier_score": 0.20, "n_samples": 4342}
+  },
+  "feature_importance": {
+    "winner_rank": 0.28,
+    "loser_rank": 0.22,
+    "winner_recent_win_pct": 0.15,
+    "loser_recent_win_pct": 0.12,
+    "surface_hard": 0.08,
+    "winner_age": 0.06,
+    "h2h_win_pct": 0.05,
+    "days_since_epoch": 0.04
+  },
+  "last_updated": "2025-01-13T10:30:00"
+}
