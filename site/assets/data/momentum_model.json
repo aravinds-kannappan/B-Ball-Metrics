@@ -1,6 +1,0 @@
-{
-  "model_type": "CatBoost",
-  "metrics": {"auc": 0.72, "accuracy": 0.68},
-  "sample_matches": [],
-  "last_updated": "2025-01-13T10:30:00"
-}
