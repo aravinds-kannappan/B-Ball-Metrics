@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}RallyScope - Tennis Intelligence Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Tennis Intelligence & Vision</h1>
+            <p class="hero-subtitle">Advanced analytics powered by machine learning and computer vision</p>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <h3>{{ outcome_metrics.test.auc|round(3) if outcome_metrics.test else 'N/A' }}</h3>
+                    <p>Model AUC</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ outcome_metrics.test.brier_score|round(3) if outcome_metrics.test else 'N/A' }}</h3>
+                    <p>Brier Score</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ total_players|default('N/A') }}</h3>
+                    <p>Players Analyzed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="model-performance">
+        <div class="section-header">
+            <h2>Model Performance</h2>
+            <p>Real-time insights from our machine learning models</p>
+        </div>
+        
+        <div class="performance-grid">
+            <div class="performance-card">
+                <h3>Match Outcome Prediction</h3>
+                <div id="outcome-metrics-chart"></div>
+                <div class="metrics-summary">
+                    {% if outcome_metrics %}
+                    <p><strong>Test AUC:</strong> {{ outcome_metrics.test.auc|round(3) }}</p>
+                    <p><strong>Accuracy:</strong> {{ outcome_metrics.test.accuracy|round(3) }}</p>
+                    <p><strong>Samples:</strong> {{ outcome_metrics.test.n_samples|default('N/A') }}</p>
+                    {% else %}
+                    <p>Model metrics not available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="performance-card">
+                <h3>Feature Importance</h3>
+                <div id="feature-importance-chart"></div>
+                <div class="feature-insights">
+                    {% if top_features %}
+                    <h4>Top Predictive Factors:</h4>
+                    <ol>
+                        {% for feature in top_features[:5] %}
+                        <li>{{ feature|replace('_', ' ')|title }}</li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="player-insights">
+        <div class="section-header">
+            <h2>Player Archetypes</h2>
+            <p>Discover playing styles through machine learning clustering</p>
+        </div>
+        
+        <div class="archetype-grid">
+            {% if archetypes %}
+            {% for archetype_name, archetype_data in archetypes.items() %}
+            <div class="archetype-card">
+                <h3>{{ archetype_name }}</h3>
+                <div class="archetype-stats">
+                    <p><strong>{{ archetype_data.count }}</strong> players</p>
+                    <p><strong>{{ (archetype_data.avg_win_percentage * 100)|round(1) }}%</strong> avg win rate</p>
+                    <p><strong>{{ (archetype_data.avg_service_hold_rate * 100)|round(1) }}%</strong> service hold</p>
+                </div>
+                <div class="surface-preferences">
+                    <small>Surface preferences:</small>
+                    <div class="surface-bars">
+                        <div class="surface-bar">
+                            <span>Hard</span>
+                            <div class="bar">
+                                <div class="fill" style="width: {{ (archetype_data.surface_preferences.hard * 100)|round(0) }}%"></div>
+                            </div>
+                        </div>
+                        <div class="surface-bar">
+                            <span>Clay</span>
+                            <div class="bar">
+                                <div class="fill" style="width: {{ (archetype_data.surface_preferences.clay * 100)|round(0) }}%"></div>
+                            </div>
+                        </div>
+                        <div class="surface-bar">
+                            <span>Grass</span>
+                            <div class="bar">
+                                <div class="fill" style="width: {{ (archetype_data.surface_preferences.grass * 100)|round(0) }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>Player archetype data not available</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="recent-updates">
+        <div class="section-header">
+            <h2>Recent Updates</h2>
+        </div>
+        
+        <div class="updates-grid">
+            <div class="update-card">
+                <h3>🤖 Model Training</h3>
+                <p>Outcome prediction model last updated: {{ last_model_update|default('N/A') }}</p>
+                <p>Current performance: {{ outcome_metrics.test.auc|round(3) if outcome_metrics.test else 'N/A' }} AUC</p>
+            </div>
+            
+            <div class="update-card">
+                <h3>📊 Data Pipeline</h3>
+                <p>Latest data processed: {{ latest_data_date|default('N/A') }}</p>
+                <p>Total matches analyzed: {{ total_matches|default('N/A') }}</p>
+            </div>
+            
+            <div class="update-card">
+                <h3>👁️ Computer Vision</h3>
+                <p>Serve analysis videos: {{ vision_stats.total_videos|default('N/A') }}</p>
+                <p>Average serve speed: {{ vision_stats.average_speed|round(1) if vision_stats.average_speed else 'N/A' }} km/h</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load and render charts when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Render outcome metrics chart
+        {% if outcome_metrics %}
+        const outcomeData = [
+            {
+                x: ['Training', 'Validation', 'Test'],
+                y: [{{ outcome_metrics.train.auc|default(0) }}, {{ outcome_metrics.val.auc|default(0) }}, {{ outcome_metrics.test.auc|default(0) }}],
+                type: 'bar',
+                name: 'AUC Score',
+                marker: { color: ['#2E86AB', '#A23B72', '#F18F01'] }
+            }
+        ];
+        
+        const outcomeLayout = {
+            title: 'Model Performance Across Splits',
+            yaxis: { title: 'AUC Score', range: [0, 1] },
+            margin: { t: 40, b: 40, l: 60, r: 20 }
+        };
+        
+        Plotly.newPlot('outcome-metrics-chart', outcomeData, outcomeLayout, {responsive: true});
+        {% endif %}
+
+        // Render feature importance chart
+        {% if feature_importance %}
+        const featureData = [{
+            x: [{% for feature, importance in feature_importance.items()[:8] %}'{{ feature|replace("_", " ")|title }}'{{ "," if not loop.last }}{% endfor %}],
+            y: [{% for feature, importance in feature_importance.items()[:8] %}{{ importance }}{{ "," if not loop.last }}{% endfor %}],
+            type: 'bar',
+            orientation: 'v',
+            marker: { color: '#2E86AB' }
+        }];
+        
+        const featureLayout = {
+            title: 'Top Feature Importance',
+            yaxis: { title: 'Importance Score' },
+            xaxis: { tickangle: -45 },
+            margin: { t: 40, b: 100, l: 60, r: 20 }
+        };
+        
+        Plotly.newPlot('feature-importance-chart', featureData, featureLayout, {responsive: true});
+        {% endif %}
+    });
+</script>
+{% endblock %}

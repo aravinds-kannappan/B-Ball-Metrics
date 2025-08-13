@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Players - RallyScope{% endblock %}
+
+{% block content %}
+<div class="players-page">
+    <section class="page-header">
+        <h1>Player Analytics</h1>
+        <p>Explore comprehensive player statistics and archetypes</p>
+    </section>
+
+    <section class="player-controls">
+        <div class="search-filter-controls">
+            <div class="search-box">
+                <input type="text" id="player-search" placeholder="Search players..." />
+            </div>
+            <div class="filter-controls">
+                <select id="archetype-filter">
+                    <option value="">All Archetypes</option>
+                    {% if archetypes %}
+                    {% for archetype_name in archetypes.keys() %}
+                    <option value="{{ archetype_name }}">{{ archetype_name }}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+                <select id="surface-filter">
+                    <option value="">All Surfaces</option>
+                    <option value="hard">Hard Court</option>
+                    <option value="clay">Clay Court</option>
+                    <option value="grass">Grass Court</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="archetype-visualization">
+        <div class="section-header">
+            <h2>Player Archetype Clusters</h2>
+            <p>Interactive visualization of playing styles</p>
+        </div>
+        <div id="archetype-scatter-plot"></div>
+    </section>
+
+    <section class="player-table-section">
+        <div class="section-header">
+            <h2>Player Statistics</h2>
+            <p id="table-info">Showing {{ player_profiles|length if player_profiles else 0 }} players</p>
+        </div>
+
+        <div class="table-container">
+            <table id="players-table">
+                <thead>
+                    <tr>
+                        <th>Player ID</th>
+                        <th>Archetype</th>
+                        <th>Win %</th>
+                        <th>Service Hold %</th>
+                        <th>Return Win %</th>
+                        <th>Hard Court %</th>
+                        <th>Clay Court %</th>
+                        <th>Grass Court %</th>
+                        <th>Total Matches</th>
+                        <th>Recent Form</th>
+                        <th>Age</th>
+                    </tr>
+                </thead>
+                <tbody id="players-table-body">
+                    {% if player_profiles %}
+                    {% for player in player_profiles %}
+                    <tr data-archetype="{{ player.archetype|default('Unknown') }}" data-player-id="{{ player.player_id }}">
+                        <td>{{ player.player_id }}</td>
+                        <td>
+                            <span class="archetype-badge archetype-{{ player.archetype|lower|replace(' ', '-') if player.archetype else 'unknown' }}">
+                                {{ player.archetype|default('Unknown') }}
+                            </span>
+                        </td>
+                        <td>{{ (player.win_percentage * 100)|round(1) if player.win_percentage else 'N/A' }}%</td>
+                        <td>{{ (player.service_hold_rate * 100)|round(1) if player.service_hold_rate else 'N/A' }}%</td>
+                        <td>{{ (player.return_game_win_rate * 100)|round(1) if player.return_game_win_rate else 'N/A' }}%</td>
+                        <td>{{ (player.hard_win_pct * 100)|round(1) if player.hard_win_pct else 'N/A' }}%</td>
+                        <td>{{ (player.clay_win_pct * 100)|round(1) if player.clay_win_pct else 'N/A' }}%</td>
+                        <td>{{ (player.grass_win_pct * 100)|round(1) if player.grass_win_pct else 'N/A' }}%</td>
+                        <td>{{ player.total_matches|default('N/A') }}</td>
+                        <td>
+                            <div class="form-indicator">
+                                <div class="form-bar" style="width: {{ (player.recent_form * 100)|round(0) if player.recent_form else 50 }}%; background-color: {{ 'green' if player.recent_form and player.recent_form > 0.6 else 'orange' if player.recent_form and player.recent_form > 0.4 else 'red' }}"></div>
+                            </div>
+                        </td>
+                        <td>{{ player.age|round(1) if player.age else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="11">No player data available</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="player-details-modal" id="player-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="player-details-content">
+                <!-- Player details will be populated here -->
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Player data for JavaScript
+    const playersData = {{ player_profiles|tojson if player_profiles else '[]' }};
+    const archetypeEmbedding = {{ embedding_coords|tojson if embedding_coords else '{}' }};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Render archetype scatter plot
+        if (archetypeEmbedding.x && archetypeEmbedding.y) {
+            renderArchetypeScatter();
+        }
+
+        // Set up table filtering
+        setupTableFiltering();
+        
+        // Set up player modal
+        setupPlayerModal();
+    });
+
+    function renderArchetypeScatter() {
+        const trace = {
+            x: archetypeEmbedding.x,
+            y: archetypeEmbedding.y,
+            mode: 'markers',
+            type: 'scatter',
+            text: playersData.map(p => `Player ${p.player_id}<br>Archetype: ${p.archetype}<br>Win Rate: ${(p.win_percentage * 100).toFixed(1)}%`),
+            hovertemplate: '%{text}<extra></extra>',
+            marker: {
+                size: 8,
+                color: archetypeEmbedding.labels,
+                colorscale: 'viridis',
+                showscale: true,
+                colorbar: { title: 'Cluster' }
+            }
+        };
+
+        const layout = {
+            title: 'Player Archetype Clusters (UMAP Projection)',
+            xaxis: { title: 'UMAP Dimension 1' },
+            yaxis: { title: 'UMAP Dimension 2' },
+            margin: { t: 50, b: 50, l: 50, r: 50 }
+        };
+
+        Plotly.newPlot('archetype-scatter-plot', [trace], layout, {responsive: true});
+    }
+
+    function setupTableFiltering() {
+        const searchInput = document.getElementById('player-search');
+        const archetypeFilter = document.getElementById('archetype-filter');
+        const surfaceFilter = document.getElementById('surface-filter');
+        const tableBody = document.getElementById('players-table-body');
+        const tableInfo = document.getElementById('table-info');
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const archetypeFilter = document.getElementById('archetype-filter').value;
+            const surfaceFilter = document.getElementById('surface-filter').value;
+            
+            const rows = tableBody.querySelectorAll('tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const playerId = row.cells[0].textContent.toLowerCase();
+                const archetype = row.getAttribute('data-archetype');
+                
+                const matchesSearch = playerId.includes(searchTerm);
+                const matchesArchetype = !archetypeFilter || archetype === archetypeFilter;
+                
+                // Surface filtering would need additional data - simplified for now
+                const matchesSurface = true;
+
+                if (matchesSearch && matchesArchetype && matchesSurface) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            tableInfo.textContent = `Showing ${visibleCount} players`;
+        }
+
+        searchInput.addEventListener('input', filterTable);
+        archetypeFilter.addEventListener('change', filterTable);
+        surfaceFilter.addEventListener('change', filterTable);
+    }
+
+    function setupPlayerModal() {
+        const modal = document.getElementById('player-modal');
+        const closeBtn = document.querySelector('.close-modal');
+        const tableRows = document.querySelectorAll('#players-table-body tr');
+
+        tableRows.forEach(row => {
+            row.addEventListener('click', function() {
+                const playerId = this.getAttribute('data-player-id');
+                if (playerId) {
+                    showPlayerDetails(playerId);
+                }
+            });
+        });
+
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    function showPlayerDetails(playerId) {
+        const player = playersData.find(p => p.player_id.toString() === playerId);
+        if (!player) return;
+
+        const modal = document.getElementById('player-modal');
+        const content = document.getElementById('player-details-content');
+        
+        content.innerHTML = `
+            <h2>Player ${player.player_id}</h2>
+            <div class="player-details-grid">
+                <div class="detail-section">
+                    <h3>Playing Style</h3>
+                    <p><strong>Archetype:</strong> ${player.archetype || 'Unknown'}</p>
+                    <p><strong>Win Percentage:</strong> ${(player.win_percentage * 100).toFixed(1)}%</p>
+                    <p><strong>Service Hold Rate:</strong> ${(player.service_hold_rate * 100).toFixed(1)}%</p>
+                    <p><strong>Return Game Win Rate:</strong> ${(player.return_game_win_rate * 100).toFixed(1)}%</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Surface Performance</h3>
+                    <p><strong>Hard Court:</strong> ${(player.hard_win_pct * 100).toFixed(1)}%</p>
+                    <p><strong>Clay Court:</strong> ${(player.clay_win_pct * 100).toFixed(1)}%</p>
+                    <p><strong>Grass Court:</strong> ${(player.grass_win_pct * 100).toFixed(1)}%</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Career Stats</h3>
+                    <p><strong>Total Matches:</strong> ${player.total_matches || 'N/A'}</p>
+                    <p><strong>Recent Form:</strong> ${(player.recent_form * 100).toFixed(1)}%</p>
+                    <p><strong>Age:</strong> ${player.age ? player.age.toFixed(1) : 'N/A'}</p>
+                </div>
+            </div>
+        `;
+
+        modal.style.display = 'block';
+    }
+</script>
+{% endblock %}
