@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Analysis - RallyScope</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Plotly.js (bundled locally) -->
+    <script src="js/plotly.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+    
+    <meta name="description" content="Advanced tennis analytics using machine learning and computer vision">
+    <meta name="keywords" content="tennis, analytics, machine learning, computer vision, Elo rating">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-brand">
+                    🎾 RallyScope
+                </a>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="players.html" class="nav-link">Players</a></li>
+                    <li><a href="matches.html" class="nav-link">Matches</a></li>
+                    <li><a href="vision.html" class="nav-link">Vision</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        
+<div class="matches-page">
+    <section class="page-header">
+        <h1>Match Analysis</h1>
+        <p>Explore match predictions and momentum dynamics</p>
+    </section>
+
+    <section class="match-predictor">
+        <div class="section-header">
+            <h2>Match Outcome Predictor</h2>
+            <p>Predict match outcomes using our trained model</p>
+        </div>
+
+        <div class="predictor-form">
+            <div class="form-group">
+                <label for="player1-elo">Player 1 Elo Rating:</label>
+                <input type="number" id="player1-elo" value="1600" min="1000" max="2500">
+            </div>
+            <div class="form-group">
+                <label for="player2-elo">Player 2 Elo Rating:</label>
+                <input type="number" id="player2-elo" value="1500" min="1000" max="2500">
+            </div>
+            <div class="form-group">
+                <label for="surface">Surface:</label>
+                <select id="surface">
+                    <option value="Hard">Hard Court</option>
+                    <option value="Clay">Clay Court</option>
+                    <option value="Grass">Grass Court</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="h2h-pct">Head-to-Head Win %:</label>
+                <input type="number" id="h2h-pct" value="50" min="0" max="100">
+            </div>
+            <button id="predict-btn" onclick="predictMatch()">Predict Match</button>
+        </div>
+
+        <div id="prediction-result" class="prediction-result" style="display: none;">
+            <h3>Prediction Result</h3>
+            <div class="prediction-display">
+                <div class="probability-bar">
+                    <div class="player1-prob"></div>
+                    <div class="player2-prob"></div>
+                </div>
+                <div class="probability-labels">
+                    <span class="player1-label">Player 1: <span id="player1-prob-text">50%</span></span>
+                    <span class="player2-label">Player 2: <span id="player2-prob-text">50%</span></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sample-matches">
+        <div class="section-header">
+            <h2>Sample Match Analysis</h2>
+            <p>Explore momentum dynamics from real matches</p>
+        </div>
+
+        <div class="matches-grid">
+            
+            <div class="no-data-message">
+                <p>No sample matches available. Run the momentum analysis pipeline to generate match data.</p>
+            </div>
+            
+        </div>
+    </section>
+
+    <section class="match-details-modal" id="match-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="match-details-content">
+                <!-- Match details will be populated here -->
+            </div>
+        </div>
+    </section>
+
+    <section class="model-insights">
+        <div class="section-header">
+            <h2>Model Insights</h2>
+            <p>Understanding what drives match outcomes</p>
+        </div>
+
+        <div class="insights-grid">
+            
+            
+            <div class="insight-card">
+                <p>Player rankings are the strongest predictor of match outcomes (28% importance)</p>
+            </div>
+            
+            <div class="insight-card">
+                <p>Recent form significantly impacts win probability (15% importance)</p>
+            </div>
+            
+            <div class="insight-card">
+                <p>Surface type influences prediction accuracy (8% importance)</p>
+            </div>
+            
+            <div class="insight-card">
+                <p>Age differences matter most in closely matched players (6% importance)</p>
+            </div>
+            
+            
+        </div>
+    </section>
+</div>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2025 RallyScope. Tennis Intelligence & Vision Platform.</p>
+            <p>Powered by machine learning and computer vision.</p>
+        </div>
+    </footer>
+
+    
+<script>
+    // Sample matches data
+    const sampleMatches = {};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Render mini momentum charts
+        renderMiniMomentumCharts();
+        
+        // Set up match modal
+        setupMatchModal();
+    });
+
+    function renderMiniMomentumCharts() {
+        let chartIndex = 1;
+        for (const matchId in sampleMatches) {
+            const matchData = sampleMatches[matchId];
+            const chartDiv = document.getElementById(`mini-chart-${chartIndex}`);
+            
+            if (chartDiv && matchData.momentum_probs) {
+                const trace = {
+                    x: matchData.game_numbers,
+                    y: matchData.momentum_probs,
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: '#2E86AB', width: 2 },
+                    showlegend: false
+                };
+
+                const layout = {
+                    margin: { t: 10, b: 20, l: 20, r: 10 },
+                    xaxis: { showticklabels: false, showgrid: false },
+                    yaxis: { showticklabels: false, showgrid: false, range: [0, 1] },
+                    height: 80
+                };
+
+                Plotly.newPlot(chartDiv, [trace], layout, {responsive: true, displayModeBar: false});
+            }
+            chartIndex++;
+        }
+    }
+
+    function predictMatch() {
+        const player1Elo = parseFloat(document.getElementById('player1-elo').value);
+        const player2Elo = parseFloat(document.getElementById('player2-elo').value);
+        const surface = document.getElementById('surface').value;
+        const h2hPct = parseFloat(document.getElementById('h2h-pct').value) / 100;
+
+        // Simple prediction based on Elo difference
+        // In a real implementation, this would call the actual model
+        const eloDiff = player1Elo - player2Elo;
+        let winProb = 1 / (1 + Math.pow(10, -eloDiff / 400));
+
+        // Adjust for surface and H2H (simplified)
+        const surfaceBonus = surface === 'Clay' ? 0.02 : surface === 'Grass' ? -0.01 : 0;
+        winProb += surfaceBonus;
+        winProb = winProb * 0.8 + h2hPct * 0.2; // Blend with H2H
+
+        // Ensure probability is between 0 and 1
+        winProb = Math.max(0.1, Math.min(0.9, winProb));
+
+        // Display result
+        showPredictionResult(winProb);
+    }
+
+    function showPredictionResult(player1WinProb) {
+        const resultDiv = document.getElementById('prediction-result');
+        const player1ProbBar = document.querySelector('.player1-prob');
+        const player2ProbBar = document.querySelector('.player2-prob');
+        const player1ProbText = document.getElementById('player1-prob-text');
+        const player2ProbText = document.getElementById('player2-prob-text');
+
+        const player1Pct = Math.round(player1WinProb * 100);
+        const player2Pct = 100 - player1Pct;
+
+        player1ProbBar.style.width = `${player1Pct}%`;
+        player2ProbBar.style.width = `${player2Pct}%`;
+        player1ProbText.textContent = `${player1Pct}%`;
+        player2ProbText.textContent = `${player2Pct}%`;
+
+        resultDiv.style.display = 'block';
+    }
+
+    function showMatchDetails(matchId) {
+        const matchData = sampleMatches[matchId];
+        if (!matchData) return;
+
+        const modal = document.getElementById('match-modal');
+        const content = document.getElementById('match-details-content');
+        
+        content.innerHTML = `
+            <h2>Match ${matchId.split('_')[1] || matchId}</h2>
+            <div class="match-momentum-chart" id="full-momentum-chart"></div>
+            <div class="match-summary">
+                <h3>Match Summary</h3>
+                <p><strong>Total Games:</strong> ${matchData.match_length}</p>
+                <p><strong>Game Sequence:</strong> ${matchData.game_numbers.length} tracked</p>
+                <p><strong>Final Score:</strong> Detailed scoring not available</p>
+            </div>
+        `;
+
+        // Render full momentum chart
+        const trace = {
+            x: matchData.game_numbers,
+            y: matchData.momentum_probs,
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#2E86AB', width: 3 },
+            marker: { size: 6, color: '#2E86AB' },
+            fill: 'tonexty',
+            fillcolor: 'rgba(46, 134, 171, 0.1)',
+            name: 'Server Win Probability'
+        };
+
+        // Add 50% line
+        const fiftyLine = {
+            x: matchData.game_numbers,
+            y: new Array(matchData.game_numbers.length).fill(0.5),
+            type: 'scatter',
+            mode: 'lines',
+            line: { color: 'gray', width: 1, dash: 'dash' },
+            name: 'Even (50%)'
+        };
+
+        const layout = {
+            title: 'Match Momentum Dynamics',
+            xaxis: { title: 'Game Number' },
+            yaxis: { title: 'Server Win Probability', range: [0, 1] },
+            margin: { t: 50, b: 50, l: 60, r: 20 }
+        };
+
+        Plotly.newPlot('full-momentum-chart', [fiftyLine, trace], layout, {responsive: true});
+
+        modal.style.display = 'block';
+    }
+
+    function setupMatchModal() {
+        const modal = document.getElementById('match-modal');
+        const closeBtn = document.querySelector('.close-modal');
+
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

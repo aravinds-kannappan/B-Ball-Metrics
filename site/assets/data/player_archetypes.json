@@ -1,0 +1,31 @@
+{
+  "archetypes": {
+    "Top Players": {
+      "count": 150,
+      "avg_win_percentage": 0.72,
+      "avg_service_hold_rate": 0.82,
+      "avg_return_game_win_rate": 0.31,
+      "surface_preferences": {"hard": 0.74, "clay": 0.68, "grass": 0.71},
+      "avg_age": 28.5
+    },
+    "Rising Stars": {
+      "count": 280,
+      "avg_win_percentage": 0.58,
+      "avg_service_hold_rate": 0.75,
+      "avg_return_game_win_rate": 0.26,
+      "surface_preferences": {"hard": 0.60, "clay": 0.55, "grass": 0.58},
+      "avg_age": 24.2
+    },
+    "Veterans": {
+      "count": 320,
+      "avg_win_percentage": 0.52,
+      "avg_service_hold_rate": 0.71,
+      "avg_return_game_win_rate": 0.23,
+      "surface_preferences": {"hard": 0.53, "clay": 0.51, "grass": 0.54},
+      "avg_age": 31.8
+    }
+  },
+  "player_profiles": [],
+  "embedding_coords": {"x": [], "y": [], "labels": []},
+  "last_updated": "2025-01-13T10:30:00"
+}

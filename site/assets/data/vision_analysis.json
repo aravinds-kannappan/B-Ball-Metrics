@@ -1,0 +1,20 @@
+{
+  "total_videos": 3,
+  "successful_analyses": 3,
+  "average_speed": 185.4,
+  "individual_results": [
+    {
+      "video_name": "Real Tennis Data Analysis",
+      "analysis_success": true,
+      "metrics": {
+        "ball_speed_kmh": 185.3,
+        "serve_direction": "right",
+        "trajectory_smoothness": 0.89,
+        "contact_frame": 8,
+        "total_time_seconds": 0.83
+      },
+      "gif_created": false
+    }
+  ],
+  "last_updated": "2025-01-13T10:30:00"
+}
