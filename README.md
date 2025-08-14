@@ -1,30 +1,30 @@
-# 🎾 RallyScope - Tennis Intelligence & Vision
+# RallyScope - Tennis Intelligence & Vision
 
 **Advanced tennis analytics platform powered by machine learning and computer vision**
 
 RallyScope is a comprehensive tennis intelligence system that combines statistical analysis, machine learning prediction models, and computer vision to provide deep insights into tennis performance. Built as a static website suitable for GitHub Pages deployment.
 
-## ✨ Features
+## Features
 
-### 🤖 Machine Learning
+### Machine Learning
 - **Match Outcome Prediction**: XGBoost model predicting match winners with 81% AUC
 - **Momentum Analysis**: Time-series modeling of in-match momentum shifts
 - **Player Archetypes**: UMAP + HDBSCAN clustering to identify playing styles
 - **Model Explainability**: SHAP analysis revealing key predictive factors
 
-### 👁️ Computer Vision
+### 👁Computer Vision
 - **Serve Analysis**: Ball tracking and speed calculation from video
 - **Court Calibration**: Homography-based coordinate transformation
 - **Trajectory Analysis**: Smoothness scoring and contact point detection
 - **Automated Visualization**: GIF generation with annotated metrics
 
-### 📊 Interactive Dashboard
+### Interactive Dashboard
 - **Real-time Model Performance**: Live metrics and calibration plots
 - **Player Profiles**: Searchable database with archetype classifications
 - **Match Predictions**: Interactive predictor with feature importance
 - **Visual Analytics**: Plotly-powered charts and scatter plots
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+
@@ -163,7 +163,7 @@ Builds static website with Jinja2 templates:
 4. **Surface Type** (8% importance)
 5. **Player Age** (6% importance)
 
-## 🎯 Computer Vision Results
+## Computer Vision Results
 
 Sample analysis from serve videos:
 
@@ -173,7 +173,7 @@ Sample analysis from serve videos:
 | Djokovic | 192.7 | 92% | Left | 9 |
 | Serena | 178.1 | 85% | Right | 7 |
 
-## 🚢 Deployment
+## Deployment
 
 ### GitHub Pages
 ```bash
@@ -192,7 +192,7 @@ The `site/` folder contains a complete static website that can be deployed to an
 - All dependencies bundled locally
 - Works with CDNs and static hosting services
 
-## 🧪 Development
+## Development
 
 ### Code Quality
 ```bash
@@ -219,7 +219,7 @@ make clean         # Clean cache files
 - **Interactivity**: Modify `site/js/main.js`
 - **Content**: Update Jinja2 templates in `src/sitegen/templates/`
 
-## 📈 Data Sources
+## Data Sources
 
 All data is sourced from public repositories:
 
@@ -227,7 +227,7 @@ All data is sourced from public repositories:
 - **Point-by-Point**: [Tennis point-by-point data](https://github.com/JeffSackmann/tennis_pointbypoint)
 - **Player Info**: Official ATP/WTA data via the above repositories
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -236,40 +236,9 @@ All data is sourced from public repositories:
 5. Push to branch (`git push origin feature/amazing-feature`)
 6. Open a Pull Request
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Jeff Sackmann** for comprehensive tennis datasets
-- **Tennis community** for match data collection
-- **Open source libraries**: pandas, scikit-learn, OpenCV, Plotly
-- **Computer vision research** in sports analytics
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/rallyscope/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/rallyscope/discussions)
-- **Documentation**: See inline code comments and docstrings
-
-## 🗺️ Roadmap
-
-### Phase 2 Features
-- [ ] **Real-time match prediction** during live tournaments
-- [ ] **Deep learning models** for trajectory prediction
-- [ ] **Multi-camera serve analysis** with 3D reconstruction
-- [ ] **Spin analysis** using high-speed video
-- [ ] **Strategy recommendation** engine
-- [ ] **Mobile-responsive design** improvements
-
-### Technical Improvements
-- [ ] **Automated data pipeline** with schedule updates
-- [ ] **A/B testing framework** for model comparison
-- [ ] **Performance monitoring** with alerts
-- [ ] **Docker containerization** for reproducible builds
-- [ ] **API endpoints** for external integrations
-
 ---
 
 **Built with ❤️ for the tennis community**
